@@ -1,29 +1,30 @@
 # 🚀 Lyftr AI — Containerized Webhook API
 
-A production-grade **FastAPI** service that ingests WhatsApp-like webhooks **exactly once**, verifies **HMAC signatures**, persists messages in **SQLite**, and exposes **query, analytics, health, and metrics** endpoints — all fully containerized with **Docker**.
+A containerized FastAPI-based backend service designed to receive WhatsApp-style webhook events exactly once, validate request authenticity using HMAC-SHA256, store data in SQLite, and expose clean APIs for retrieval, analytics, health checks, and metrics.
 
-Built to meet **Lyftr AI’s backend engineering evaluation criteria**.
-
+This project is implemented as part of Lyftr AI’s Backend Engineering Assignment and follows production-oriented design practices.
 ---
 
 ## ✨ Features
 
 ### 🔐 Secure Webhook Ingestion
-- HMAC-SHA256 signature verification  
-- Rejects unsigned or tampered requests  
-
+- Validates incoming requests using HMAC-SHA256 signatures
+- Rejects missing, invalid, or tampered signatures
+  
 ### ♻️ Idempotent Message Processing
-- `message_id` enforced as primary key  
-- Same message can be sent multiple times without duplication  
+- `message_id` enforced as a unique primary key
+- Repeated webhook calls with the same ID are safely ignore
 
 ### 🗄️ SQLite Persistence
-- Database stored on Docker volume  
+- Messages stored in SQLite
+- Database backed by a Docker volume  
 - File path: `/data/app.db`  
 
 ### 🔍 Searchable & Paginated Message API
-- Filter by sender  
-- Filter by timestamp  
-- Free-text search  
+- Pagination support
+- Filter by sender (from)
+- Filter by timestamp (since)
+- Case-insensitive text search 
 
 ### 📊 Analytics Endpoint
 - Total messages  
@@ -45,12 +46,12 @@ Built to meet **Lyftr AI’s backend engineering evaluation criteria**.
 - Includes:
   - `request_id`
   - `latency_ms`
-  - `status`
-  - webhook `result`  
+  - HTTP `status`
+  - webhook processing `result`  
 
 ### 🐳 Fully Dockerized
-- Zero local setup  
-- Runs with Docker Compose  
+- No local Python setup required
+- Runs fully using Docker Compose 
 
 ---
 
@@ -64,11 +65,11 @@ Built to meet **Lyftr AI’s backend engineering evaluation criteria**.
 
 ---
 
-## ▶️ How to Run
+## ▶️ Running the Application
 
 ### 1️⃣ Prerequisites
-Make sure you have:
-- **Docker Desktop** installed and running
+Ensure the following is installed and running
+- **Docker Desktop** 
 
 ---
 
@@ -124,13 +125,13 @@ X-Signature: <HMAC_SHA256 of raw body using WEBHOOK_SECRET>```
 }
 ```
 
-- Invalid or missing signature → 401
+- Invalid or missing signature → 401 Unauthorized
 
-- Invalid payload → 422
+- Invalid payload → 422 Validation Error
 
-- Duplicate message_id → still returns 200 (idempotent)
+- Duplicate `message_id` →  200  OK(idempotent behaviour)
 
-## 📬 List Messages
+## 📬 List Messages API
 ```http
 GET /messages
 ```
@@ -191,7 +192,7 @@ GET /metrics
 ```
 
 
-Returns Prometheus-style metrics including:
+Returns Prometheus-compatible metrics such as:
 
 - http_requests_total
 
@@ -199,18 +200,17 @@ Returns Prometheus-style metrics including:
 
 - request_latency_ms_*
 
-## 🧠 Design Decisions
-### 🔐 HMAC Verification
+## 🧠 Design Notes
+### 🔐 Signature Verification
 
-The webhook body is validated using:
+Incoming webhook payloads are validated using:
 ```
 HMAC_SHA256(WEBHOOK_SECRET, raw_request_body)
 ```
 
+The computed signature is compared with the X-Signature header using constant-time comparison to prevent timing attacks.
 
-and compared against the X-Signature header using constant-time comparison.
-
-### ♻️ Idempotency
+### ♻️ Idempotency Strategy
 
 message_id is the SQLite primary key.
 Duplicate inserts throw an integrity error, which is caught and treated as a valid duplicate request.
