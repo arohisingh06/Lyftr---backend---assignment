@@ -2,7 +2,7 @@
 
 A containerized FastAPI-based backend service designed to receive WhatsApp-style webhook events exactly once, validate request authenticity using HMAC-SHA256, store data in SQLite, and expose clean APIs for retrieval, analytics, health checks, and metrics.
 
-This project is implemented as part of Lyftr AI’s Backend Engineering Assignment and follows production-oriented design practices.
+ This project is implemented as part of Lyftr AI’s Backend Engineering Assignment  and follows production-oriented design practices.
 ---
 
 ## ✨ Features
