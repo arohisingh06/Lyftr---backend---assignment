@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+pydantic
+prometheus_client
+python-json-logger
